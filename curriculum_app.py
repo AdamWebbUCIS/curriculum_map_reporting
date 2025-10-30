@@ -2,112 +2,89 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# --- EXPANDED & CORRECTED MOCK DATA SETUP ---
-# This data is modeled after the University of Cincinnati's curriculum structure.
-# It includes over 100 entries over two academic years to showcase robust reporting.
-data = {
-    'Academic Year': ['2024-2025']*56 + ['2025-2026']*61,
-    'Academic Level': ['Phase 1']*25 + ['Phase 2']*20 + ['Phase 3']*11 + ['Phase 1']*28 + ['Phase 2']*22 + ['Phase 3']*11,
-    'Course': [
-        # Phase 1 (2024-2025)
-        'Foundations of the Human Body', 'Foundations of the Human Body', 'Foundations of the Human Body', 'Host Defense', 'Host Defense',
-        'Cardio, Pulm, Renal', 'Cardio, Pulm, Renal', 'Cardio, Pulm, Renal', 'Cardio, Pulm, Renal', 'GI, Endo, Repro', 'GI, Endo, Repro',
-        'Neuroscience', 'Neuroscience', 'Physician & Society', 'Physician & Society', 'Clinical Skills 1', 'Clinical Skills 1', 'Clinical Skills 1',
-        'Foundations of the Human Body', 'Host Defense', 'Cardio, Pulm, Renal', 'GI, Endo, Repro', 'Neuroscience', 'Physician & Society', 'Clinical Skills 1',
-        # Phase 2 (2024-2025)
-        'Internal Medicine', 'Internal Medicine', 'Internal Medicine', 'Surgery', 'Surgery', 'Surgery', 'Pediatrics', 'Pediatrics',
-        'OB/GYN', 'OB/GYN', 'Psychiatry', 'Psychiatry', 'Neurology', 'Neurology', 'Family Medicine', 'Family Medicine',
-        'Internal Medicine', 'Surgery', 'Pediatrics', 'OB/GYN',
-        # Phase 3 (2024-2025)
-        'Emergency Medicine', 'Emergency Medicine', 'Sub-Internship (Medicine)', 'Sub-Internship (Medicine)', 'Sub-Internship (Medicine)', 'Radiology Elective',
-        'Global Health Elective', 'Bioinformatics', 'Emergency Medicine', 'Sub-Internship (Surgery)', 'Global Health Elective',
-        # Phase 1 (2025-2026)
-        'Foundations of the Human Body', 'Foundations of the Human Body', 'Foundations of the Human Body', 'Host Defense', 'Host Defense',
-        'Cardio, Pulm, Renal', 'Cardio, Pulm, Renal', 'Cardio, Pulm, Renal', 'Cardio, Pulm, Renal', 'GI, Endo, Repro', 'GI, Endo, Repro',
-        'Neuroscience', 'Neuroscience', 'Physician & Society', 'Physician & Society', 'Physician & Society', 'Clinical Skills 1', 'Clinical Skills 1', 'Clinical Skills 1',
-        'Foundations of the Human Body', 'Host Defense', 'Cardio, Pulm, Renal', 'GI, Endo, Repro', 'Neuroscience', 'Physician & Society', 'Clinical Skills 1', 'Cardio, Pulm, Renal', 'Physician & Society',
-        # Phase 2 (2025-2026)
-        'Internal Medicine', 'Internal Medicine', 'Internal Medicine', 'Surgery', 'Surgery', 'Surgery', 'Pediatrics', 'Pediatrics',
-        'OB/GYN', 'OB/GYN', 'Psychiatry', 'Psychiatry', 'Neurology', 'Neurology', 'Family Medicine', 'Family Medicine',
-        'Internal Medicine', 'Surgery', 'Pediatrics', 'OB/GYN', 'Family Medicine', 'Internal Medicine',
-        # Phase 3 (2025-2026)
-        'Emergency Medicine', 'Emergency Medicine', 'Sub-Internship (Medicine)', 'Sub-Internship (Medicine)', 'Sub-Internship (Medicine)', 'Radiology Elective',
-        'Global Health Elective', 'Bioinformatics', 'Emergency Medicine', 'Sub-Internship (Surgery)', 'Global Health Elective'
-    ],
-    'Event Name': [
-        # Phase 1 (2024-2025)
-        'Anatomy Lab: Thorax', 'Histology Lecture', 'Genetics Small Group', 'Immunology Basics', 'Microbiology Lab',
-        'ECG Workshop', 'Renal Physiology I', 'Pulmonary Function Lab', 'Pharmacology: Diuretics', 'GI Anatomy', 'Endocrine Feedback Loops',
-        'Neuroanatomy Lab', 'Cranial Nerves Exam', 'Health Equity Seminar', 'Ethics: Informed Consent', 'History Taking I', 'Physical Exam: Cardiac', 'Patient Interview Assessment',
-        'Anatomy Final Exam', 'Microbiology Practical', 'Pathophysiology Exam', 'GI OSCE', 'Neuro OSCE', 'Ethics Essay', 'Final OSCE',
-        # Phase 2 (2024-2025)
-        'Inpatient Rounds', 'Case Presentation', 'Shelf Exam Review', 'OR Observation', 'Suturing Workshop', 'Pre-Op Assessment', 'Well-Child Check', 'Vaccination Schedule',
-        'Labor & Delivery', 'Gyn Clinic', 'Inpatient Psychiatry', 'CBT Workshop', 'Stroke Clinic', 'Neurology Shelf Review', 'Outpatient Clinic', 'Community Medicine Project',
-        'EBM Presentation', 'Surgical Note Writing', 'Pediatric OSCE', 'OB/GYN Final Exam',
-        # Phase 3 (2024-2025)
-        'Trauma Bay Simulation', 'Splinting Workshop', 'Patient Admissions', 'Discharge Summaries', 'Ethics Grand Rounds', 'Reading Chest X-Rays',
-        'Clinic in Rural Setting', 'Data Analysis Project', 'EM Final Exam', 'Presenting on Rounds', 'Cultural Competency Reflection',
-        # Phase 1 (2025-2026)
-        'Anatomy Lab: Thorax', 'Histology Lecture', 'Genetics Small Group', 'Immunology Basics', 'Microbiology Lab',
-        'ECG Workshop', 'Renal Physiology I', 'Pulmonary Function Lab', 'Pharmacology: Diuretics', 'GI Anatomy', 'Endocrine Feedback Loops',
-        'Neuroanatomy Lab', 'Cranial Nerves Exam', 'Health Equity Seminar', 'Ethics: Informed Consent', 'Health Disparities Research', 'History Taking I', 'Physical Exam: Cardiac', 'Patient Interview Assessment',
-        'Anatomy Final Exam', 'Microbiology Practical', 'Pathophysiology Exam', 'GI OSCE', 'Neuro OSCE', 'Ethics Essay', 'Final OSCE', 'Pharmacology: Beta Blockers', 'Telemedicine Workshop',
-        # Phase 2 (2025-2026)
-        'Inpatient Rounds', 'Case Presentation', 'Shelf Exam Review', 'OR Observation', 'Suturing Workshop', 'Pre-Op Assessment', 'Well-Child Check', 'Vaccination Schedule',
-        'Labor & Delivery', 'Gyn Clinic', 'Inpatient Psychiatry', 'CBT Workshop', 'Stroke Clinic', 'Neurology Shelf Review', 'Outpatient Clinic', 'Community Medicine Project',
-        'EBM Presentation', 'Surgical Note Writing', 'Pediatric OSCE', 'OB/GYN Final Exam', 'Preventive Care OSCE', 'Geriatrics Rotation',
-        # Phase 3 (2025-2026)
-        'Trauma Bay Simulation', 'Splinting Workshop', 'Patient Admissions', 'Discharge Summaries', 'Ethics Grand Rounds', 'Reading Chest X-Rays',
-        'Clinic in Rural Setting', 'Data Analysis Project', 'EM Final Exam', 'Presenting on Rounds', 'Cultural Competency Reflection'
-    ],
-    'Item': ['Instructional Method']*18 + ['Assessment']*7 + ['Instructional Method']*16 + ['Assessment']*4 + ['Instructional Method']*8 + ['Assessment']*3 + ['Instructional Method']*19 + ['Assessment']*9 + ['Instructional Method']*16 + ['Assessment']*6 + ['Instructional Method']*8 + ['Assessment']*3,
-    'Associated Objectives': [
-        'Identify major thoracic structures', 'Describe epithelial tissue types', 'Analyze a pedigree for genetic disorders', 'Explain innate vs. adaptive immunity', 'Perform a gram stain',
-        'Interpret a basic ECG', 'Describe glomerular filtration', 'Measure lung volumes with spirometry', 'Explain diuretic mechanism of action', 'Trace the path of digestion', 'Diagram the HPA axis',
-        'Identify major brain structures', 'Perform a complete cranial nerve exam', 'Define social determinants of health', 'Explain the elements of informed consent', 'Gather a complete patient history', 'Perform a cardiac physical exam', 'Demonstrate patient-centered communication',
-        'Test knowledge of anatomy', 'Identify unknown microbes', 'Apply knowledge of cardiac pathophysiology', 'Assess clinical skills in GI', 'Assess clinical skills in neuro', 'Analyze an ethical dilemma', 'Assess overall clinical skills for Phase 1',
-        'Formulate a differential diagnosis', 'Present a patient case effectively', 'Prepare for NBME shelf exam', 'Understand the roles in an OR', 'Demonstrate basic surgical skills', 'Evaluate a patient for surgery', 'Perform a developmental screening', 'Recall pediatric vaccine schedule',
-        'Manage a patient in labor', 'Perform a speculum exam', 'Conduct a psychiatric interview', 'Apply principles of cognitive behavioral therapy', 'Localize a neurological lesion', 'Prepare for neurology shelf exam', 'Manage common outpatient conditions', 'Address a community health need',
-        'Critically appraise a research article', 'Write a SOAP note', 'Assess pediatric history taking', 'Test knowledge of OB/GYN',
-        'Manage an unstable patient', 'Apply a splint correctly', 'Admit a new patient to the floor', 'Write a safe discharge summary', 'Discuss complex ethical cases', 'Identify common pathologies on CXR',
-        'Experience healthcare in a low-resource setting', 'Use python for data analysis', 'Test knowledge of emergency medicine', 'Function as a PGY-1 intern', 'Reflect on cross-cultural patient encounters',
-        'Identify major thoracic structures', 'Describe epithelial tissue types', 'Analyze a pedigree for genetic disorders', 'Explain innate vs. adaptive immunity', 'Perform a gram stain',
-        'Interpret a basic ECG', 'Describe glomerular filtration', 'Measure lung volumes with spirometry', 'Explain diuretic mechanism of action', 'Trace the path of digestion', 'Diagram the HPA axis',
-        'Identify major brain structures', 'Perform a complete cranial nerve exam', 'Define social determinants of health', 'Explain the elements of informed consent', 'Analyze data on local health disparities', 'Gather a complete patient history', 'Perform a cardiac physical exam', 'Demonstrate patient-centered communication',
-        'Test knowledge of anatomy', 'Identify unknown microbes', 'Apply knowledge of cardiac pathophysiology', 'Assess clinical skills in GI', 'Assess clinical skills in neuro', 'Analyze an ethical dilemma', 'Assess overall clinical skills for Phase 1', 'Explain beta blocker pharmacology', 'Demonstrate use of telemedicine platform',
-        'Formulate a differential diagnosis', 'Present a patient case effectively', 'Prepare for NBME shelf exam', 'OR Observation', 'Suturing Workshop', 'Pre-Op Assessment', 'Well-Child Check', 'Vaccination Schedule',
-        'Manage a patient in labor', 'Perform a speculum exam', 'Conduct a psychiatric interview', 'Apply principles of cognitive behavioral therapy', 'Localize a neurological lesion', 'Prepare for neurology shelf exam', 'Manage common outpatient conditions', 'Address a community health need',
-        'Critically appraise a research article', 'Write a SOAP note', 'Assess pediatric history taking', 'Test knowledge of OB/GYN', 'Assess preventive care skills', 'Manage care for older adults',
-        'Manage an unstable patient', 'Apply a splint correctly', 'Admit a new patient to the floor', 'Write a safe discharge summary', 'Discuss complex ethical cases', 'Identify common pathologies on CXR',
-        'Experience healthcare in a low-resource setting', 'Use python for data analysis', 'Test knowledge of emergency medicine', 'Function as a PGY-1 intern', 'Reflect on cross-cultural patient encounters'
-    ],
-    'Mapped Program Outcome': [
-        'MK-1', 'MK-1', 'MK-2', 'MK-1', 'PC-1', 'PC-2', 'MK-1', 'PC-1', 'MK-4', 'MK-1', 'MK-1', 'MK-1', 'PC-2', 'SBP-1', 'PROF-1', 'ICS-1', 'PC-2', 'ICS-2', 'MK-1', 'PC-1', 'MK-1', 'PC-2', 'PC-2', 'PROF-1', 'PC-2',
-        'PC-4', 'ICS-2', 'PBLI-1', 'PROF-2', 'PC-1', 'PC-3', 'PC-3', 'MK-3', 'PC-5', 'PC-5', 'PC-6', 'ICS-1', 'MK-1', 'PBLI-1', 'PC-3', 'SBP-2', 'PBLI-2', 'ICS-2', 'PC-3', 'MK-3',
-        'PC-7', 'PC-1', 'PC-8', 'ICS-2', 'PROF-1', 'MK-1', 'SBP-3', 'PBLI-3', 'MK-5', 'PC-8', 'PROF-3',
-        'MK-1', 'MK-1', 'MK-2', 'MK-1', 'PC-1', 'PC-2', 'MK-1', 'PC-1', 'MK-4', 'MK-1', 'MK-1', 'MK-1', 'PC-2', 'SBP-1', 'PROF-1', 'SBP-1', 'ICS-1', 'PC-2', 'ICS-2', 'MK-1', 'PC-1', 'MK-1', 'PC-2', 'PC-2', 'PROF-1', 'PC-2', 'MK-4', 'SBP-4',
-        'PC-4', 'ICS-2', 'PBLI-1', 'PROF-2', 'PC-1', 'PC-3', 'PC-3', 'MK-3', 'PC-5', 'PC-5', 'PC-6', 'ICS-1', 'MK-1', 'PBLI-1', 'PC-3', 'SBP-2', 'PBLI-2', 'ICS-2', 'PC-3', 'MK-3', 'PC-3', 'PC-4',
-        'PC-7', 'PC-1', 'PC-8', 'ICS-2', 'PROF-1', 'MK-1', 'SBP-3', 'PBLI-3', 'MK-5', 'PC-8', 'PROF-3'
-    ],
-    'Mapped Course Outcome': [
-        'FHB-1', 'FHB-1', 'FHB-2', 'HD-1', 'HD-2', 'CPR-1', 'CPR-2', 'CPR-3', 'CPR-4', 'GER-1', 'GER-2', 'NEURO-1', 'NEURO-2', 'PS-1', 'PS-2', 'CS1-1', 'CS1-2', 'CS1-3', 'FHB-1', 'HD-2', 'CPR-1', 'GER-1', 'NEURO-2', 'PS-2', 'CS1-3',
-        'IM-1', 'IM-2', 'IM-3', 'SURG-1', 'SURG-2', 'SURG-3', 'PEDS-1', 'PEDS-2', 'OB-1', 'OB-2', 'PSYCH-1', 'PSYCH-2', 'NEURO-C-1', 'NEURO-C-2', 'FM-1', 'FM-2', 'IM-2', 'SURG-3', 'PEDS-1', 'OB-1',
-        'EM-1', 'EM-2', 'SUBI-M-1', 'SUBI-M-2', 'SUBI-M-3', 'RAD-1', 'GH-1', 'BIO-1', 'EM-1', 'SUBI-S-1', 'GH-2',
-        'FHB-1', 'FHB-1', 'FHB-2', 'HD-1', 'HD-2', 'CPR-1', 'CPR-2', 'CPR-3', 'CPR-4', 'GER-1', 'GER-2', 'NEURO-1', 'NEURO-2', 'PS-1', 'PS-2', 'PS-3', 'CS1-1', 'CS1-2', 'CS1-3', 'FHB-1', 'HD-2', 'CPR-1', 'GER-1', 'NEURO-2', 'PS-2', 'CS1-3', 'CPR-4', 'PS-4',
-        'IM-1', 'IM-2', 'IM-3', 'SURG-1', 'SURG-2', 'SURG-3', 'PEDS-1', 'PEDS-2', 'OB-1', 'OB-2', 'PSYCH-1', 'PSYCH-2', 'NEURO-C-1', 'NEURO-C-2', 'FM-1', 'FM-2', 'IM-2', 'SURG-3', 'PEDS-1', 'OB-1', 'FM-3', 'IM-4',
-        'EM-1', 'EM-2', 'SUBI-M-1', 'SUBI-M-2', 'SUBI-M-3', 'RAD-1', 'GH-1', 'BIO-1', 'EM-1', 'SUBI-S-1', 'GH-2'
-    ],
-    'Hours': [
-        4, 2, 3, 2, 4, 3, 2, 3, 2, 2, 2, 4, 2, 2, 2, 4, 4, 2, 3, 3, 3, 2, 2, 4, 4,
-        160, 4, 8, 40, 4, 8, 80, 4, 120, 40, 80, 8, 40, 8, 80, 8, 4, 4, 2, 2,
-        4, 4, 160, 4, 2, 8, 8, 4, 2, 160, 2,
-        4, 2, 3, 2, 4, 3, 2, 3, 2, 2, 2, 4, 2, 3, 2, 4, 4, 4, 2, 3, 3, 3, 2, 2, 4, 4, 2, 3,
-        160, 4, 8, 40, 4, 8, 80, 4, 120, 40, 80, 8, 40, 8, 80, 8, 4, 4, 2, 2, 2, 40,
-        4, 4, 160, 4, 2, 8, 8, 4, 2, 160, 2
+def create_fake_data(num_rows=2000):
+    """
+    Generates a DataFrame of fake curriculum data spanning from 2000 to 2025.
+    """
+    
+    # --- Define data for randomization ---
+    
+    # 1. Create Academic Years from 2000-2001 to 2024-2025
+    start_year = 2000
+    end_year = 2024
+    academic_years = [f"{y}-{y+1}" for y in range(start_year, end_year + 1)]
+    
+    # 2. Fake Event Names (Expanded to match your master_keyword_list)
+    event_names = [
+        'Anatomy Lab', 'Physiology Lecture', 'Clinical Skills Workshop', 
+        'Ethics Seminar', 'Pathology Review', 'Pharmacology I', 'Cardiology Block', 
+        'Pulmonology Case Study', 'Surgery Rotation', 'Pediatrics Grand Rounds',
+        'Immunology Basics', 'Microbiology Lab', 'Neuroanatomy Lab', 'Renal System',
+        'GI Tract Review', 'Genetics Workshop'
     ]
-}
+    
+    # 3. Fake Objectives (including "Health Equity")
+    objectives = [
+        'Describe the cardiovascular system', 'Understand cell biology', 
+        'Apply principles of health equity', 'Discuss patient-centered care', 
+        'Identify major organ structures', 'Analyze determinants of health', 
+        'Practice clinical examination', 'Review microbiology basics',
+        'Learn surgical knot tying', 'Debate ethical dilemmas in medicine',
+        'Discuss telemedicine advancements'
+    ]
+    
+    # 4. Fake MEPO Outcomes
+    mepos = [
+        'MEPO 1: Medical Knowledge', 'MEPO 2: Patient Care', 
+        'MEPO 3: Communication', 'MEPO 4: Professionalism', 
+        'MEPO 5: Systems-Based Practice', 'MEPO 6: Lifelong Learning'
+    ]
 
-df = pd.DataFrame(data)
+    # 5. Fake data for the *NEW* required columns
+    academic_levels = ['Phase 1', 'Phase 2', 'Phase 3', 'Phase 4']
+    courses = ['Anatomy', 'Ethics', 'Cardiology', 'Pulmonary', 'Renal', 'Genetics']
+    items = ['Instructional Method', 'Assessment']
+    course_outcomes = ['C-O 1: Foundational Knowledge', 'C-O 2: Clinical Skills', 'C-O 3: Professional Identity']
+    
+    
+    # --- Generate the DataFrame ---
+    data = {
+        'Academic Year': np.random.choice(academic_years, num_rows),
+        'Academic Level': np.random.choice(academic_levels, num_rows),
+        'Course': np.random.choice(courses, num_rows),
+        'Event Name': np.random.choice(event_names, num_rows),
+        'Associated Objectives': np.random.choice(objectives, num_rows),
+        'Hours': np.round(np.random.uniform(0.5, 4.0, num_rows), 1),
+        'Item': np.random.choice(items, num_rows),
+        'Mapped Program Outcome': np.random.choice(mepos, num_rows),
+        'Mapped Course Outcome': np.random.choice(course_outcomes, num_rows)
+    }
+    
+    # ***** FIX 1 WAS HERE *****
+    # Create the DataFrame from the 'data' dictionary, NOT by calling the function again.
+    df = pd.DataFrame(data)
+    
+    # --- Ensure at least some data for your default search ---
+    health_equity_rows = 100
+    he_data = {
+        'Academic Year': np.random.choice(academic_years, health_equity_rows),
+        'Academic Level': 'Phase 1',
+        'Course': 'Ethics',
+        'Event Name': 'Health Disparities Seminar',
+        'Associated Objectives': 'Apply principles of health equity',
+        'Hours': np.round(np.random.uniform(1.0, 3.0, health_equity_rows), 1),
+        'Item': 'Instructional Method',
+        'Mapped Program Outcome': 'MEPO 5: Systems-Based Practice',
+        'Mapped Course Outcome': 'C-O 3: Professional Identity'
+    }
+    he_df = pd.DataFrame(he_data)
+    
+    # Combine the random data with the specific health equity data
+    final_df = pd.concat([df, he_df]).reset_index(drop=True)
+    
+    return final_df
+
+df = create_fake_data(num_rows=2000)
 
 # --- APP LAYOUT & UI ---
 st.set_page_config(layout="wide")
@@ -235,25 +212,44 @@ elif report_type == "Trends Over Time (CQI)":
     st.header("Trends Over Time (Longitudinal CQI Report)")
     st.info("🎯 **Purpose:** For **CQI (Continuous Quality Improvement) processes** and **curriculum revitalization** planning to track how changes impact content hours or MEPO coverage year-over-year.")
 
-    with st.sidebar.expander("Trend Report Filters", expanded=True):
-        trend_type = st.radio("What do you want to track?", ["Keyword Hours", "MEPO Frequency"])
-        if trend_type == "Keyword Hours":
-            keyword = st.text_input("Enter Keyword to Track", "Health Equity")
-            if keyword:
-                search_mask = df['Event Name'].str.contains(keyword, case=False) | df['Associated Objectives'].str.contains(keyword, case=False)
-                trend_df = df[search_mask]
-                result = trend_df.groupby('Academic Year')['Hours'].sum()
-                st.subheader(f"Trend of Instructional Hours for '{keyword}'")
-                st.line_chart(result)
-                st.dataframe(result)
+ # --- Part 1: Sidebar for Filters ---
+# This block defines all the user inputs and stores their values in variables.
+with st.sidebar.expander("Trend Report Filters", expanded=True):
+    trend_type = st.radio("What do you want to track?", ["Keyword Hours", "MEPO Frequency"])
+    
+    # Initialize variables to None
+    keyword = None
+    selected_outcome = None
 
-        elif trend_type == "MEPO Frequency":
-            program_outcomes = sorted(df['Mapped Program Outcome'].unique().tolist())
-            selected_outcome = st.selectbox("Select Program Outcome (MEPO) to Track:", program_outcomes)
-            if selected_outcome:
-                trend_df = df[df['Mapped Program Outcome'] == selected_outcome]
-                result = trend_df.groupby('Academic Year').size()
-                result.name = "Frequency"
-                st.subheader(f"Trend of Frequency for MEPO '{selected_outcome}'")
-                st.line_chart(result)
-                st.dataframe(result)
+    if trend_type == "Keyword Hours":
+        keyword = st.text_input("Enter Keyword to Track", "Health Equity")
+        
+    elif trend_type == "MEPO Frequency":
+        program_outcomes = sorted(df['Mapped Program Outcome'].unique().tolist())
+        selected_outcome = st.selectbox("Select Program Outcome (MEPO) to Track:", program_outcomes)
+
+# --- Part 2: Main Page for Results ---
+# This code is OUTSIDE the sidebar block, so it renders on the main page.
+# It uses the variables captured from the sidebar to run the analysis.
+
+if trend_type == "Keyword Hours":
+    if keyword:  # Only run if a keyword has been entered
+        search_mask = df['Event Name'].str.contains(keyword, case=False) | df['Associated Objectives'].str.contains(keyword, case=False)
+        trend_df = df[search_mask]
+        result = trend_df.groupby('Academic Year')['Hours'].sum()
+        
+        # These display elements are now on the main page
+        st.subheader(f"Trend of Instructional Hours for '{keyword}'")
+        st.line_chart(result)
+        st.dataframe(result)
+        
+elif trend_type == "MEPO Frequency":
+    if selected_outcome:  # Only run if an outcome has been selected
+        trend_df = df[df['Mapped Program Outcome'] == selected_outcome]
+        result = trend_df.groupby('Academic Year').size()
+        result.name = "Frequency"
+        
+        # These display elements are now on the main page
+        st.subheader(f"Trend of Frequency for MEPO '{selected_outcome}'")
+        st.line_chart(result)
+        st.dataframe(result)
